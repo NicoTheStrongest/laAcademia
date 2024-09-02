@@ -19,6 +19,8 @@ int pedirNumReal();
 int pedirNumEntero();
 int validarImpar(int numero);
 int mcd(int a, int b);
+void imprimirMatriz(int* matriz, int n);
+int sumaDiagonales(int* matriz, int n);
 
 int main(){
     int n;
@@ -71,33 +73,72 @@ int problema17(){
 }
 
 int problema15(){
+    // pide un impar y calcula la suma de los numeros en la diagonal e una
+    // espiral de n*n.
+    int n, valor = 1, medio, sumat;
+    cout<<"dame un numero n entero impar para generar una matriz nxn: ";
+    n = pedirNumEntero();
+    n = validarImpar(n);
+    int matrizA [n][n];
+    int fila = (n/2);
+    int columna = (n/2);
+    matrizA [fila][columna] = valor++;
+    int pasos = 1;
+    while (valor<=n*n){
+        for (int i = 0; i < pasos && valor <= n*n; i++)
+        {
+            columna++;
+            matrizA[fila][columna]=valor++;
+        }
+        for (int i = 0; i < pasos && valor <= n*n; i++)
+        {
+            fila++;
+            matrizA[fila][columna]=valor++;
+        }
+        pasos++;
+        for (int i = 0; i < pasos && valor <= n*n; i++)
+        {
+            columna--;
+            matrizA[fila][columna]=valor++;
+        }
+        for (int i = 0; i < pasos && valor <= n*n; i++)
+        {
+            fila--;
+            matrizA[fila][columna]=valor++;
+        }
+        pasos++;
+    }
+    imprimirMatriz(&matrizA[0][0], n);
+    int suma = sumaDiagonales(&matrizA[0][0], n);
+    cout << "La suma de las diagonales es: " << suma << endl;
     return 0;
 }
 
-int problema13(){  //     revisar
-    int X;
+int problema13(){
+    // Calcula la sumatoria de los numeros primos menores a un numero.
+    int n;
     int acum=0;
-    int a=2;
+    int nmenores=2;
     cout<<"Ingrese un numero mayor que 0"<<endl;
-    cin>>X;
-    while(X<=0){
+    cin>>n;
+    while(n<=0){
         cout<<"Ingrese un numero mayor que 0"<<endl;
-        cin>>X;
+        cin>>n;
     }
-    if (X>2){
-        while(a<X && X!=2){
-            bool bandera=true;
+    if (n>2){
+        while(nmenores<n && n!=2){
+            bool primo=true;
             int cont=2;
-            while(a>cont && bandera){
-                if (a%cont==0){
-                    bandera=false;
+            while(nmenores>cont && primo){
+                if (nmenores % cont == 0){
+                    primo=false;
                 }
                 cont++;
             }
-            if (bandera){
-                acum=acum+a;
+            if (primo){
+                acum=acum+nmenores;
             }
-            a=a+1;
+            nmenores=nmenores+1;
         }
         cout<<"El resultao de la suma es: "<<acum;
     }
@@ -107,82 +148,85 @@ int problema13(){  //     revisar
     return 0;
 }
 
-int problema11(){  //     revisar
-    int X;
-    cout<<"Escriba un # entero positivo"<<endl;
-    cin>>X;
-    while(X<=0){
+int problema11(){  
+    // Calcula el mcm de los numeros menores a n.
+    int n;
+    cout<<"Escriba un # entero positivo y diferente de 0"<<endl;
+    cin>>n;
+    while(n<=0){
         cout<<"Escriba un # entero positivo"<<endl;
-        cin>>X;
+        cin>>n;
     }
-    int cont=X;
-    int val=X;
-    while(cont>=1){
-        if(val%cont==0){
-            cont--;
+    int multip=n;
+    int mcm=n;
+    while(multip>=1){
+        if(mcm%multip==0){
+            multip--;
         }
         else{
-            val=val+X;
-            cont=X;
+            mcm=mcm+n;
+            multip=n;
         }
-    }
-    cout<<"El minimimo comun multiplo es:"<<val;
+    } 
+    cout<<"El minimimo comun multiplo es:"<<mcm;
     return 0;
 }
 
-int problema9(){  //             revisar
-    int X;
-    int a;
-    int acum=0;
+int problema9(){ 
+    //sumatoria de los digitos de un numero elevados a si mismos
+    int n;
+    int mod;
+    int sumat=0;
     cout<<"ingrese un numero entero:"<<endl;
-    cin>>X;
-    if(X<0){
-        X=X*(-1);
-
+    cin>>n;
+    if(n<0){
+        n=n*(-1);
     }
-    while(X>=1){
-        a=(X%10);
-        X=(X-a)/10;
+    while(n>=1){
         int cont=1;
-        int acumm=1;
-        while(cont<=a){
-            acumm=acumm*a;
+        int poten=1;
+        mod=(n%10);
+        n=(n-mod)/10;
+        while(cont<=mod){
+            poten=poten*mod;
             cont++;
         }
-        acum=acum+acumm;
+        sumat=sumat+poten;
     }
-    cout<<"El resultado de la suma es: "<<acum;
+    cout<<"El resultado de la suma es: "<<sumat;
     return 0;
 }
 
-int problema7(){ //             revisar
-    int X;
-    int acum=0;
+int problema7(){
+    //calcular la sumatoria de los numeros pares menores que x y que ademas
+    //pertenezcan a la serie de fibonacci.
+    int x;
+    int suma=0;
     int cont=1;
-    int i=1;
-    int j;
-    int z=1;
+    int termino1=1;
+    int termino2=1;
+    int aux;
     cout<<"ingrese un # mayor que 0"<<endl;
-    cin>>X;
-    while(X<=0){
+    cin>>x;
+    while(x<=0){
         cout<<"ingrese un # mayor que 0"<<endl;
-        cin>>X;
+        cin>>x;
     }
-    while(X>z){
+    while(termino2<x){
         if(cont==1){
-            j=i;
+            aux=termino1;
             cont++;
         }
         else{
-            z=j+i;
-            i=j;
-            j=z;
+            termino2=aux+termino1;
+            termino1=aux;
+            aux=termino2;
         }
-        if (z%2==0 && z<X){
-            acum=acum+z;
+        if (termino2%2==0 && termino2<x){
+            suma=suma+termino2;
         }
     }
-    cout<<"El resultado de la suma es: "<<acum;
+    cout<<"El resultado de la suma es: "<<suma;
     return 0;
 }
 
@@ -340,8 +384,30 @@ int mcd(int a, int b) {
     return cont;
 }
 
+void imprimirMatriz(int* matriz, int n) {
+    for (int i = 0; i < n; ++i) {        // Recorre las filas
+        for (int j = 0; j < n; ++j) {    // Recorre las columnas
+            // Acceso a los elementos usando aritmética de punteros
+            cout << *(matriz + i * n + j) << "\t";
+        }
+        cout << endl;  // Nueva línea al final de cada fila
+    }
+}
 
+int sumaDiagonales(int* matriz, int n) {
+    int suma = 0;
+    for (int i = 0; i < n; ++i) {
+        // Sumar el elemento de la diagonal principal
+        suma += *(matriz + i * n + i);
+        // Sumar el elemento de la diagonal inversa
+        suma += *(matriz + i * n + (n - 1 - i));
+    }
 
+    // Si n es impar, restamos el elemento central, ya que fue contado dos veces
+    if (n % 2 != 0) {
+        suma -= *(matriz + (n / 2) * n + (n / 2));
+    }
 
-
+    return suma;
+}
 
