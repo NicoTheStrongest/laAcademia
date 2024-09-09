@@ -1,0 +1,23 @@
+// C++ code
+//
+// Configura el baud rate para la comunicación serial
+void setup() {
+  Serial.begin(9600); // Inicializa la comunicación serial a 9600 baudios
+  Serial.println("Deme una cadena de caracteres: ");
+}
+
+void loop() {
+  if (Serial.available()) {
+    String cadena = Serial.readStringUntil('\n'); // Lee la cadena hasta un salto de línea
+    int tamanio = cadena.length();
+    
+    for (int i = 0; i < tamanio; ++i) {
+      char caracter = cadena.charAt(i); // no se puede usar cadena[i] entoces toca así
+      if (caracter >= 'a' && caracter <= 'z') {
+        caracter = caracter - 32; // Convierte minúscula a mayúscula
+      }
+      Serial.print(caracter);
+    }
+    Serial.println(); // Imprime una nueva línea al final
+  }
+}
