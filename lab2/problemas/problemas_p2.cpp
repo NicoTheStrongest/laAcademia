@@ -22,6 +22,10 @@ int validarPar(int numero);
 string quitarEspacios(string cadena);
 string convertirMayus(string cadena);
 int definirRomano(char romano);
+int validarImpar(int numero);
+void mostrarCubo(bool cubo, int* matriz, int tamanio);
+void pedirNumerosP12(int* matriz, int tamanio);
+bool verificarCubo(int* matriz, int tamanio);
 
 int main()
 {
@@ -69,8 +73,56 @@ int problema12(){
     int n;
     cout<<"dame un entero para la matriz cuadrada: ";
     n = pedirNumEntero();
-    int matriz[n][n];
+    n = validarImpar(n);
+    if (n>0){
+        int matriz[n][n];
+        pedirNumerosP12(&matriz[0][0], n*n);
+        bool cubo = verificarCubo(&matriz[0][0], n);
+        mostrarCubo(cubo, &matriz[0][0], n);
+    }
+    else {cout<<"Numero invalido";}
     return 0;
+}
+
+void mostrarCubo(bool cubo, int* matriz, int n){
+    cout<<"\n";
+    for (int i = 0; i < n; i++){
+        for (int j = 0; j < n; j++){cout<<matriz[i*n+j]<<" ";}
+        cout<<"\n";
+    }
+    if (cubo){cout<<"\n es un cubo magico\n";}
+    else {cout<<"\n no es un cubo magico\n";}
+}
+
+void pedirNumerosP12(int* matriz, int tamanio){
+    int entrada;
+    cout<<"dame el numero de la matriz fila por fila";
+    for (int i = 0; i < tamanio; i++){
+        cout<<"numero: ";
+        entrada = pedirNumEntero();
+        matriz[i] = entrada;
+    }
+}
+
+bool verificarCubo(int* matriz, int n){
+    int suma = 0;
+    for (int j = 0; j < n; ++j) {
+        suma += matriz[j];
+    }
+    int acumDiagonal1 = 0, acumDiagonal2 = 0, sumaFila = 0, sumaColumna = 0;
+    for (unsigned short int i = 0; i < n ; i++){
+        acumDiagonal1 += matriz[i*(n+1)];
+        acumDiagonal2 += matriz[(i+1)*(n-1)];
+        for (int j = 0; j < n; j++){
+            sumaFila += matriz[i*n+j];
+            sumaColumna += matriz[j*n+i];
+        }
+        if (sumaFila != suma || sumaColumna != suma){return false;}
+        else {sumaFila = 0; sumaColumna = 0;}
+
+    }
+    if (acumDiagonal1 == suma && acumDiagonal2 == suma){return true;}
+    else {return false;}
 }
 
 int problema10(){
@@ -194,6 +246,15 @@ int validarPar(int numero){
     while (numero%2!=0) {
         cout<<"tiene que ser un numero par"<<endl;
         cout<<"ingrese un numero par";
+        numero = pedirNumEntero();
+    }
+    return numero;
+}
+
+int validarImpar(int numero){
+    while (numero%2==0) {
+        cout<<"tiene que ser un numero impar"<<endl;
+        cout<<"ingrese un numero impar";
         numero = pedirNumEntero();
     }
     return numero;
