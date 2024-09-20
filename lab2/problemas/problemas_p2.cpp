@@ -3,8 +3,6 @@
 #include <cstdlib>
 #include <string>
 #include <cctype>
-// #include <conio.h>
-// #include <stdlib.h>
 
 using namespace std;
 
@@ -13,7 +11,10 @@ int problema4();
 int problema6();
 int problema8();
 int problema10();
-int problema11();
+int problema12();
+int problema14();
+int problema16();
+int problema18();
 
 
 int pedirNumEntero();
@@ -44,8 +45,17 @@ int main()
     case 10:
         problema10();
         break;
-    case 11:
-        problema11();
+    case 12:
+        problema12();
+        break;
+    case 14:
+        //problema14();
+        break;
+    case 16:
+        //problema16();
+        break;
+    case 18:
+        //problema18();
         break;
     default:
         break;
@@ -55,9 +65,11 @@ int main()
 
 
 
-int problema11(){
-
-
+int problema12(){
+    int n;
+    cout<<"dame un entero para la matriz cuadrada: ";
+    n = pedirNumEntero();
+    int matriz[n][n];
     return 0;
 }
 
@@ -218,7 +230,6 @@ string convertirMayus(string cadena){
     }
     return cadenaMayus;
 }
-
 
 int definirRomano(char romano){
     const int M=1000, D=500, C=100, L=50, X=10, V=5, I=1;
