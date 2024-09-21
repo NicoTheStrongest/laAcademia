@@ -26,6 +26,16 @@ int validarImpar(int numero);
 void mostrarCubo(bool cubo, int* matriz, int tamanio);
 void pedirNumerosP12(int* matriz, int tamanio);
 bool verificarCubo(int* matriz, int tamanio);
+int pedirNumerosP14(int** matriz, int n);
+int rotar90(int** matriz, int n);
+int rotar180(int** matriz, int n);
+int rotar270(int** matriz, int n);
+int combinatoriaP16(int n);
+int factorial(int n);
+void permutacionesP18(int* arreglo, int* numeros, int n, const int size);
+void moverBasura(int* arreglo, int tamanio, int posicion);
+
+void mostrarMatrizDinamica(int** matriz, int n);
 
 int main()
 {
@@ -53,13 +63,13 @@ int main()
         problema12();
         break;
     case 14:
-        //problema14();
+        problema14();
         break;
     case 16:
-        //problema16();
+        problema16();
         break;
     case 18:
-        //problema18();
+        problema18();
         break;
     default:
         break;
@@ -67,7 +77,80 @@ int main()
     return 0;
 }
 
+int problema18(){
+    //permutaciones lexicograficas de los numeros del cero al 9
+    int size = 10;
+    int* arreglo = new int[size];
+    int* numeros = new int[size] {0,1,2,3,4,5,6,7,8,9};
+    int n;
+    cout<<"Dame un numero n para hallar sus permutaciones lexicograficas: ";
+    n = pedirNumEntero();
+    while (n<0){
+        cout<<"Tiene que ser positivo\n";
+        cout<<"Dame un numero entero positivo: ";
+    }
+    permutacionesP18(arreglo, numeros, n, size);
+    cout<<"La permutacion numero "<<n<<" es: ";
+    //mostrar permutacion.
+    for (int i = 0; i < size; ++i) {
+        cout<<arreglo[i];
+    }
+    cout<<"\n";
+    return 0;
+}
 
+void permutacionesP18(int* arreglo, int* numeros, int n, const int size){
+    for (int i = 0; i < size; ++i) {
+        arreglo[i] = 0;
+    }
+    long int limite = factorial(size);
+    if (n > 0 && n < limite){
+        int bloque, termino;
+        long int enesimo = n-1;
+        for (int i = 9, j = 0; i >= 0; --i) {
+            bloque = factorial(i);
+            termino = enesimo/bloque;
+            arreglo[j] = numeros[termino]; j++;
+            moverBasura(numeros, size, numeros[termino]);
+            if (termino > 0){enesimo = enesimo%bloque;}
+        }
+    }
+    else{cout<<"numero fuera de rango";}
+}
+
+void moverBasura(int* arreglo, int tamanio, int posicion){
+    for (int i = 0, j = 0; i < tamanio; ++i) {
+        if (arreglo[i] != posicion){arreglo[j] = arreglo[i]; j++;}
+    }
+}
+
+int problema16(){
+    //combinatoria en mallas n*n
+    int n;
+    cout<<"Dame el numero n para la malla (nxn): ";
+    n = pedirNumEntero();
+    while (n<0){
+        cout<<"Tiene que ser positivo\n";
+        cout<<"Dame un numero entero positivo: ";
+    }
+    int posiblesCaminos = combinatoriaP16(n);
+    cout<<"Para una malla de "<<n<<"x"<<n<<" puntos hay "<<posiblesCaminos<<" caminos\n\n";
+    return 0;
+}
+
+int problema14(){
+    // rotacion de matriz (90, 180 y 270).
+    int** matriz = new int*[5];
+    for (int i = 0; i < 5; ++i) {
+        matriz[i] = new int [5];
+    }
+    pedirNumerosP14(matriz, 5);
+    mostrarMatrizDinamica(matriz, 5);
+    rotar90(matriz, 5);
+    rotar180(matriz, 5);
+    rotar270(matriz, 5);
+    return 0;
+}
 
 int problema12(){
     int n;
@@ -82,47 +165,6 @@ int problema12(){
     }
     else {cout<<"Numero invalido";}
     return 0;
-}
-
-void mostrarCubo(bool cubo, int* matriz, int n){
-    cout<<"\n";
-    for (int i = 0; i < n; i++){
-        for (int j = 0; j < n; j++){cout<<matriz[i*n+j]<<" ";}
-        cout<<"\n";
-    }
-    if (cubo){cout<<"\n es un cubo magico\n";}
-    else {cout<<"\n no es un cubo magico\n";}
-}
-
-void pedirNumerosP12(int* matriz, int tamanio){
-    int entrada;
-    cout<<"dame el numero de la matriz fila por fila";
-    for (int i = 0; i < tamanio; i++){
-        cout<<"numero: ";
-        entrada = pedirNumEntero();
-        matriz[i] = entrada;
-    }
-}
-
-bool verificarCubo(int* matriz, int n){
-    int suma = 0;
-    for (int j = 0; j < n; ++j) {
-        suma += matriz[j];
-    }
-    int acumDiagonal1 = 0, acumDiagonal2 = 0, sumaFila = 0, sumaColumna = 0;
-    for (unsigned short int i = 0; i < n ; i++){
-        acumDiagonal1 += matriz[i*(n+1)];
-        acumDiagonal2 += matriz[(i+1)*(n-1)];
-        for (int j = 0; j < n; j++){
-            sumaFila += matriz[i*n+j];
-            sumaColumna += matriz[j*n+i];
-        }
-        if (sumaFila != suma || sumaColumna != suma){return false;}
-        else {sumaFila = 0; sumaColumna = 0;}
-
-    }
-    if (acumDiagonal1 == suma && acumDiagonal2 == suma){return true;}
-    else {return false;}
 }
 
 int problema10(){
@@ -167,7 +209,6 @@ int problema8(){
     return 0;
 }
 
-
 int problema6(){
     string cadena;
     int tamanio;
@@ -188,7 +229,6 @@ int problema6(){
     cout<<endl;
     return 0;
 }
-
 
 int problema4(){
     string cadena;
@@ -229,7 +269,18 @@ int problema2(){
 }
 
 
+//                            FUNCIONES FUNCIONALES
 
+void mostrarMatrizDinamica(int** matriz, int n){
+    cout<<"\n\nMatriz:\n";
+    for (int i = 0; i < n; ++i) {
+        cout<<"\n";
+        for (int j = 0; j < n; ++j) {
+            cout<<matriz[i][j]<<"\t";
+        }
+    }
+    cout<<"\n";
+}
 
 int pedirNumEntero(){
     int numero;
@@ -306,8 +357,110 @@ int definirRomano(char romano){
     }
 }
 
+void mostrarCubo(bool cubo, int* matriz, int n){
+    cout<<"\n";
+    for (int i = 0; i < n; i++){
+        for (int j = 0; j < n; j++){cout<<matriz[i*n+j]<<" ";}
+        cout<<"\n";
+    }
+    if (cubo){cout<<"\n es un cubo magico\n";}
+    else {cout<<"\n no es un cubo magico\n";}
+}
 
+void pedirNumerosP12(int* matriz, int tamanio){
+    int entrada;
+    cout<<"dame el numero de la matriz fila por fila\n";
+    for (int i = 0; i < tamanio; i++){
+        cout<<"numero: ";
+        entrada = pedirNumEntero();
+        matriz[i] = entrada;
+    }
+}
 
+bool verificarCubo(int* matriz, int n){
+    int suma = 0;
+    for (int j = 0; j < n; ++j) {
+        suma += matriz[j];
+    }
+    int acumDiagonal1 = 0, acumDiagonal2 = 0, sumaFila = 0, sumaColumna = 0;
+    for (unsigned short int i = 0; i < n ; i++){
+        acumDiagonal1 += matriz[i*(n+1)];
+        acumDiagonal2 += matriz[(i+1)*(n-1)];
+        for (int j = 0; j < n; j++){
+            sumaFila += matriz[i*n+j];
+            sumaColumna += matriz[j*n+i];
+        }
+        if (sumaFila != suma || sumaColumna != suma){return false;}
+        else {sumaFila = 0; sumaColumna = 0;}
 
+    }
+    if (acumDiagonal1 == suma && acumDiagonal2 == suma){return true;}
+    else {return false;}
+}
+
+int rotar90(int** matriz, int n){
+    //rota una matriz 5 x 5 90 grados.
+    cout<<"\ngiro de 90 grados:\n";
+    for (int i = n-1; i >= 0; i--){
+        cout<<"\n";
+        for (int j = 0; j < n; ++j) {
+            cout<<matriz[j][i]<<"\t";
+        }
+    }
+    cout<<"\n";
+    return 0;
+}
+
+int rotar180(int** matriz, int n){
+    //rota una matriz 5 x 5 180 grados.
+    cout<<"\ngiro de 180 grados:\n";
+    for (int i = n-1; i >= 0; i--){
+        cout<<"\n";
+        for (int j = n-1; j >= 0; --j) {
+            cout<<matriz[i][j]<<"\t";
+        }
+    }
+    cout<<"\n";
+    return 0;
+}
+
+int rotar270(int** matriz, int n){
+    //rota una matriz 5 x 5 270 grados.
+    cout<<"\ngiro de 270 grados:\n";
+    for (int i = 0; i < n; i++){
+        cout<<"\n";
+        for (int j = n-1; j >= 0; --j) {
+            cout<<matriz[j][i]<<"\t";
+        }
+    }
+    cout<<"\n\n";
+    return 0;
+}
+
+int pedirNumerosP14(int** matriz, int n){
+    //pide numero para llenar la matriz 5*5
+    int entrada;
+    cout<<"dame los numeros enteros de la matriz\n";
+    for (int i = 0; i < n ; i++){
+        for (int j = 0; j < n; ++j) {
+            cout<<"numero: ";
+            entrada = pedirNumEntero();
+            matriz[i][j] = entrada;
+        }
+    }
+    return 0;
+}
+
+int combinatoriaP16(int n){
+    int resultado = 0, numerador = factorial(n+n), denominador1 = factorial(n), denominador2 = factorial(2*n-n);
+    resultado = numerador/(denominador1*denominador2);
+    return resultado;
+}
+
+int factorial(int n){
+    int resultado = 1;
+    for (int i = 1; i <= n; ++i) {resultado *= i;}
+    return resultado;
+}
 
 
