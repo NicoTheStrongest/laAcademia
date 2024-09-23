@@ -1,0 +1,61 @@
+// C++ code
+//
+// Configura el baud rate para la comunicación serial
+void setup() {
+  Serial.begin(9600);
+  Serial.println("Ingrese un numero romano: ");
+}
+
+void loop() {
+  if (Serial.available()) {
+    String romano = Serial.readStringUntil('\n'); // Lee la cadena ingresada
+    romano = convertirMayus(romano); // Convertir la cadena a mayúsculas
+
+    Serial.print("Cadena leida: ");
+    Serial.println(romano);
+
+    int tamanio = romano.length();
+    int arabigo = 0, t1 = 0, t2 = 0;
+    
+    // Conversión de romano a arábigo
+    for (int i = 0; i < tamanio; ++i) {
+      char carac1 = romano.charAt(i);
+      
+      t1 = valorRomano(carac1); // Obtiene el valor del primer número romano
+      
+      char carac2 = (i + 1 < tamanio) ? romano.charAt(i + 1) : '\0'; // Manejo del índice
+      t2 = valorRomano(carac2); // Obtiene el valor del siguiente número romano
+      
+      if (t1 >= t2) {
+        arabigo += t1;
+      } else {
+        arabigo -= t1;
+      }
+    }
+    
+    // Imprime el resultado en arábigo
+    Serial.print("Numero en arabigo: ");
+    Serial.println(arabigo);
+    
+    // Vuelve a pedir un nuevo número romano
+    Serial.println("Ingrese un nuevo numero romano: ");
+  }
+}
+
+int valorRomano(char romano) {
+  switch (romano) {
+    case 'I': return 1;
+    case 'V': return 5;
+    case 'X': return 10;
+    case 'L': return 50;
+    case 'C': return 100;
+    case 'D': return 500;
+    case 'M': return 1000;
+    default: return 0;
+  }
+}
+
+String convertirMayus(String s) {
+  s.toUpperCase();
+  return s;
+}
