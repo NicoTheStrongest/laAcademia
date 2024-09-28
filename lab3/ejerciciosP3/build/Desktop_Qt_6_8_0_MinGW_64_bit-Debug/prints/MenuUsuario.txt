@@ -1,0 +1,8 @@
+================================	
+	   Hola Usuario
+
+	1 -> Consultar saldo
+	2 -> Retirar dinero
+================================
+Presione (0) para salir
+================================
