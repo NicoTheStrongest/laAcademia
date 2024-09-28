@@ -1,0 +1,9 @@
+================================
+	Registrar Usuario
+
+Ingrese:
+- Documento
+- Clave
+- Saldo
+- Rol
+================================
