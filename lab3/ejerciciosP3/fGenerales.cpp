@@ -9,36 +9,297 @@
 
 using namespace std;
 
+//              PARA ENCRIPTAR Y DESENCRIPTAR
+/*
+    string binario, archivo = "hola.txt";
+    //std::string texto = "01000001011000100100001101100100";
+    //                     01000001011000100100001101100100
+    std::string texto = "AbCd";
+    escribirArchivo(archivo, texto, true);
+    binario = char2binario(archivo);
+    cout<<"texto en binario: "<<binario;
+    */
 
-void desencriptar(){}
-void encriptar(){}
+//              CONVERTIR STRING EN BINARIO PARA UTILIZAR BITWISE
+/*
+    std::string binStr = "11001100";  // cadena binaria de 8 bits
+    int num = std::stoi(binStr, 0, 2); // convierte la cadena a entero base 2
+    std::bitset<8> binResult(~num);  // Para mostrar los 8 bits del resultado
+    cout<<binResult;
+    */
+//                  PARA DIVIDIR EN N BLOQUES
+/*
+    int n, indice = 0, posiciones;
+    string binario = "01000001011000100100001101100100", bloque;
+    cout<<"ingrese la semilla: ";
+    cin>>n;
+    if(((int)size(binario))%n == 0){posiciones = ((int)size(binario))/n;}
+    else {posiciones = (((int)size(binario))/n)+1;}
+    std::string* arreglo = new std::string[posiciones];
+    for (int i = 0; i < (int)size(binario); i+=n) {
+        bloque = "";
+        for (int j = i; j < n+i; ++j) {
+            bloque += binario[j];
+        }
+        arreglo[indice] = bloque;
+        indice++;
+    }
 
-void leerArchivo(string**& arreglo, int* size){
-    //lee un archivo con formato preestablecido y lo guarda como string en un arreglo dinamico.
-    string nombreArchivo = "hola.txt";
+    delete [] arreglo;
+*/
+
+void desencriptar(string**& arreglo, int* size, int* semillaMain){
+    //Desencripta el archivo del binario y lo guarda en la estructura dinamica.
+    string nombreArchivo = "sudo.txt";
     fstream archivo(nombreArchivo, ios::in);
     if (!archivo.is_open()){
         cout << "Error al abrir el archivo\n";
         return;
     }
+
     int indice = 0;
     string contenido;
     string linea;
+    int semilla;
+    bool banderaLinea1 = true;
+
     while (getline(archivo, linea)){
-        if (indice >= *size){
-            expandirArreglo(arreglo, *size); // aumenta la memoria cuando se exceden las 10 lineas.
-            contenido = linea + "\n";
-            arreglo[indice][0] = contenido;
-            indice++;
+        string lineaDesencriptada = "";
+        if (banderaLinea1){
+            contenido = linea;
+            bitset<8> bits(contenido); //guarda en binario cada caracter
+            semilla = static_cast<int>(bits.to_ulong()); //convierte a int el binario
+            *semillaMain = semilla;
+            banderaLinea1 = false;
         }
         else {
-            contenido = linea + "\n";
-            arreglo[indice][0] = contenido;
+            if (indice >= *size){
+                expandirArreglo(arreglo, *size); // aumenta la memoria cuando se exceden las 10 lineas.
+            }
+            contenido = linea;
+            bool banderaBloque1 = true;
+            int cont0Anterior, cont1Anterior;
+            for (int i = 0; i < (int)linea.size(); i += semilla) {
+                string bloque = "";
+                int cont0 = 0, cont1 = 0;
+                for (int j = i; j < i+semilla; ++j) {
+                    //if(contenido[j] == '0'){cont0++;}
+                    //if(contenido[j] == '1'){cont1++;}
+                    bloque += contenido[j];
+                }
+                if (banderaBloque1){
+                    for (int i = 0; i < semilla; ++i) {
+                        if (bloque[i] == '1'){bloque[i]='0'; cont0++;}
+                        else if (bloque[i] == '0'){bloque[i]='1'; cont1++;}
+                    }
+                    lineaDesencriptada += bloque;
+                    cont0Anterior = cont0; cont1Anterior = cont1;
+                    banderaBloque1 = false;
+                }
+                //aca ya tenemos el bloque para aplicar las reglas de encriptacion
+                else if (cont0Anterior == cont1Anterior){
+                    for (int i = 0; i < semilla; ++i) {
+                        if (bloque[i] == '1'){bloque[i]='0';cont0++;}
+                        else if (bloque[i] == '0'){bloque[i]='1'; cont1++;}
+                    }
+                    lineaDesencriptada += bloque;
+                    cont0Anterior = cont0; cont1Anterior = cont1;
+                }
+                else if(cont0Anterior > cont1Anterior){
+
+                    for (int i = 1; i < semilla; i+=2) {
+                        if (bloque[i] == '1'){bloque[i]='0'; cont0++;}
+                        else if (bloque[i] == '0'){bloque[i]='1'; cont1++;}
+                        if (bloque[i-1] == '0'){cont0++;}
+                        else if (bloque[i-1] == '1'){cont1++;}
+                    }
+                    lineaDesencriptada += bloque;
+                    cont0Anterior = cont0; cont1Anterior = cont1;
+                }
+                else if (cont1Anterior > cont0Anterior){
+                    /*
+                    for (int i = 1; i < semilla; i+=2) {
+                        if (bloque[i] == '1'){bloque[i]='0'; cont0++;}
+                        else if (bloque[i] == '0'){bloque[i]='1';}
+                    }
+                    */
+                    for (int i = 2; i < semilla; i += 3) {
+                        if (bloque[i] == '1'){bloque[i]='0';}
+                        else if (bloque[i] == '0'){bloque[i]='1';}
+                    }
+                    for (int i = 0; i < semilla; ++i) {
+                        if (bloque[i] == '0'){cont0++;}
+                        else if (bloque[i] == '1'){cont1++;}
+                    }
+                    lineaDesencriptada += bloque;
+                    cont0Anterior = cont0; cont1Anterior = cont1;
+                }
+            }
+        }
+        //acá ya puedo trabajar sobre la linea desencriptada
+        if (lineaDesencriptada != ""){
+            string lineaCaracteres = "";
+            for (int i = 0; i < (int)lineaDesencriptada.size(); i+=8) {
+                string ascii = "";
+                for (int j = i; j < i+8; ++j) {
+                    ascii += lineaDesencriptada[j];
+                }
+                bitset<8> bits(ascii);  // Convertir a bitset de 8 bits
+                char caracterASCII = static_cast<char>(bits.to_ulong());
+                lineaCaracteres += caracterASCII;
+            }
+            string posicion = "";
+            int contPosicion = 0;
+            for (int i = 1; i < ((int)lineaCaracteres.size()-1); ++i) {
+                if (lineaCaracteres[i] == ';'){
+                    arreglo[indice][contPosicion] = posicion; // agrega las posiciones del arreglo
+                    contPosicion++;
+                    posicion = "";
+                }
+                else{posicion += lineaCaracteres[i];}
+            }
+            if (posicion != ""){arreglo[indice][contPosicion] = posicion;} // agrega la ultima posicion del arreglo
             indice++;
         }
     }
     archivo.close();
     return;
+}
+
+void encriptar(string**& arreglo, int* size, int* semilla){
+    string nombreArchivo = "sudo.txt";
+    fstream archivo;
+    archivo.open(nombreArchivo, ios::out | ios::trunc);
+    if (!archivo.is_open()){
+        cout << "Error al abrir el archivo\n";
+        return;
+    }
+
+    //agregar semilla
+    string writeSemilla;
+    bitset<8> bits(*semilla);
+    writeSemilla = bits.to_string();
+    archivo << writeSemilla << endl;
+
+    for (int i = 0; i < (*size); ++i) {
+        string linea = "<";
+        for (int j = 0; j < 4; ++j) {
+            linea += arreglo[i][j] + ";";
+        }
+        linea += ">";
+        string binarios = "";
+        for (int j2 = 0; j2 < (int)linea.size(); j2++){
+            bitset<8> bits(linea[j2]);
+            binarios += bits.to_string();
+        }
+        bool banderaBloque1 = true;
+        int cont0Anterior, cont1Anterior;
+        string lineaEncriptada = "";
+        for (int i2 = 0; i2 < (int)binarios.size(); i2 += *semilla) {
+            string bloque = "";
+            int cont0 = 0, cont1 = 0;
+            for (int j = i2; j < i2+(*semilla); ++j) {
+                if(binarios[j] == '0'){cont0++;}
+                if(binarios[j] == '1'){cont1++;}
+                bloque += binarios[j];
+            }
+            if (banderaBloque1){
+                for (int j = 0; j < (*semilla); ++j) {
+                    if (bloque[j] == '1'){bloque[j]='0';}
+                    else if (bloque[j] == '0'){bloque[j]='1';}
+                }
+                lineaEncriptada += bloque;
+                cont0Anterior = cont0; cont1Anterior = cont1;
+                banderaBloque1 = false;
+            }
+            //aca ya tenemos el bloque para aplicar las reglas de encriptacion
+            else if (cont0Anterior == cont1Anterior){
+                for (int j = 0; j < (*semilla); ++j) {
+                    if (bloque[j] == '1'){bloque[j]='0';}
+                    else if (bloque[j] == '0'){bloque[j]='1';}
+                }
+                lineaEncriptada += bloque;
+                cont0Anterior = cont0; cont1Anterior = cont1;
+            }
+            else if(cont0Anterior > cont1Anterior){
+                for (int j = 1; j < (*semilla); j+=2) {
+                    if (bloque[j] == '1'){bloque[j]='0';}
+                    else if (bloque[j] == '0'){bloque[j]='1';}
+                }
+                lineaEncriptada += bloque;
+                cont0Anterior = cont0; cont1Anterior = cont1;
+            }
+            else if (cont1Anterior > cont0Anterior){
+                for (int j = 2; j < (*semilla); j += 3) {
+                    if (bloque[j] == '1'){bloque[j]='0';}
+                    else if (bloque[j] == '0'){bloque[j]='1';}
+                }
+                lineaEncriptada += bloque;
+                cont0Anterior = cont0; cont1Anterior = cont1;
+            }
+        }
+        archivo << lineaEncriptada << endl;
+    }
+    // -----------------------------------------------------
+    /*
+    string cadena = "AbCd";
+    string binarios = "";
+    for (int i = 0; i < (int)cadena.size(); i++){
+        bitset<8> bits(cadena[i]);
+        binarios += bits.to_string();
+    }
+    bool banderaBloque1 = true;
+    int cont0Anterior, cont1Anterior;
+    string lineaEncriptada = "";
+    for (int i = 0; i < (int)binarios.size(); i += *semilla) {
+        string bloque = "";
+        int cont0 = 0, cont1 = 0;
+        for (int j = i; j < i+(*semilla); ++j) {
+            if(binarios[j] == '0'){cont0++;}
+            if(binarios[j] == '1'){cont1++;}
+            bloque += binarios[j];
+        }
+        if (banderaBloque1){
+            for (int i = 0; i < (*semilla); ++i) {
+                if (bloque[i] == '1'){bloque[i]='0';}
+                else if (bloque[i] == '0'){bloque[i]='1';}
+            }
+            lineaEncriptada += bloque;
+            cont0Anterior = cont0; cont1Anterior = cont1;
+            banderaBloque1 = false;
+        }
+        //aca ya tenemos el bloque para aplicar las reglas de encriptacion
+        else if (cont0Anterior == cont1Anterior){
+            for (int i = 0; i < (*semilla); ++i) {
+                if (bloque[i] == '1'){bloque[i]='0';}
+                else if (bloque[i] == '0'){bloque[i]='1';}
+            }
+            lineaEncriptada += bloque;
+            cont0Anterior = cont0; cont1Anterior = cont1;
+        }
+        else if(cont0Anterior > cont1Anterior){
+            for (int i = 1; i < (*semilla); i+=2) {
+                if (bloque[i] == '1'){bloque[i]='0';}
+                else if (bloque[i] == '0'){bloque[i]='1';}
+            }
+            lineaEncriptada += bloque;
+            cont0Anterior = cont0; cont1Anterior = cont1;
+        }
+        else if (cont1Anterior > cont0Anterior){
+            for (int i = 2; i < (*semilla); i += 3) {
+                if (bloque[i] == '1'){bloque[i]='0';}
+                else if (bloque[i] == '0'){bloque[i]='1';}
+            }
+            for (int i = 1; i < semilla; i+=2) {
+                if (bloque[i] == '1'){bloque[i]='0';}
+                else if (bloque[i] == '0'){bloque[i]='1';}
+            }
+            lineaEncriptada += bloque;
+            cont0Anterior = cont0; cont1Anterior = cont1;
+        }
+    }
+    cout<<lineaEncriptada<<endl;
+    */
 }
 
 
@@ -265,8 +526,8 @@ string char2binario(string nombreArchivo){
     string str_binario;
 
     while (archivo.get(caracter)){
-        bitset<8> binario(caracter);
-        str_binario += binario.to_string();
+        bitset<8> binario(caracter); //guarda en binario cada caracter
+        str_binario += binario.to_string(); //convierte a string el binario
     }
     archivo.close();
 
@@ -286,41 +547,4 @@ string char2binario(string nombreArchivo){
 
 
 
-//              PARA ENCRIPTAR Y DESENCRIPTAR
-/*
-    string binario, archivo = "hola.txt";
-    //std::string texto = "01000001011000100100001101100100";
-    //                     01000001011000100100001101100100
-    std::string texto = "AbCd";
-    escribirArchivo(archivo, texto, true);
-    binario = char2binario(archivo);
-    cout<<"texto en binario: "<<binario;
-    */
 
-//              CONVERTIR STRING EN BINARIO PARA UTILIZAR BITWISE
-/*
-    std::string binStr = "11001100";  // cadena binaria de 8 bits
-    int num = std::stoi(binStr, 0, 2); // convierte la cadena a entero base 2
-    std::bitset<8> binResult(~num);  // Para mostrar los 8 bits del resultado
-    cout<<binResult;
-    */
-//                  PARA DIVIDIR EN N BLOQUES
-/*
-    int n, indice = 0, posiciones;
-    string binario = "01000001011000100100001101100100", bloque;
-    cout<<"ingrese la semilla: ";
-    cin>>n;
-    if(((int)size(binario))%n == 0){posiciones = ((int)size(binario))/n;}
-    else {posiciones = (((int)size(binario))/n)+1;}
-    std::string* arreglo = new std::string[posiciones];
-    for (int i = 0; i < (int)size(binario); i+=n) {
-        bloque = "";
-        for (int j = i; j < n+i; ++j) {
-            bloque += binario[j];
-        }
-        arreglo[indice] = bloque;
-        indice++;
-    }
-
-    delete [] arreglo;
-*/

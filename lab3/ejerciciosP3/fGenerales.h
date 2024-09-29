@@ -10,10 +10,9 @@ using namespace std;
 
 //                  FUNCIONES
 
-void desencriptar();
-void encriptar();
+void desencriptar(string**& arreglo, int* size, int* semilla);
+void encriptar(string**& arreglo, int* size, int* semilla);
 
-void leerArchivo(string**& arreglo, int* size);
 void expandirArreglo(string**& arr, int& size);
 void menuGeneral(const string& fileName);
 int opcionesMenuGeneral(const string& mensaje1, const string& mensaje2, const string opcionesValidas[], int size);
