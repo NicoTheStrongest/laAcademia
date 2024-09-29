@@ -1,4 +1,0 @@
-<1010101010;Mariana Montoya;1234;Administrador>
-<1111111111;Elkin Perez;1234;Usuario>
-<1212121212;Camila Serna;1234;Usuario>
-<1313131313;Oscar Jaramillo;1234;Usuario>
