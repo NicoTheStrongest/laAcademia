@@ -16,37 +16,29 @@ int main(){
     for (int i = 0; i < size; ++i) {
         estructura[i] = new string[4];
     }
-    //aaaaaaaaaaa
+    string docActual;
+
     desencriptar(estructura, ptrSize, ptrSemilla);
 
-
-    for (int i = 0; i < size; ++i) {
-        if (!(estructura[i][0]=="")){
-            for (int j = 0; j < 4; ++j) {
-                cout<<estructura[i][j]<<" ";
-            }
-            cout<<endl;
-        }
-    }
-
-    encriptar(estructura, ptrSize, ptrSemilla);
-
-    /*
     // Trabajo bajo la estructura de datos.
     bool volver = true;
     while (volver){
-        int numUsuario = iniciarSesion();
+        int numUsuario = iniciarSesion(estructura, size, &docActual);
         if (numUsuario == 1){//administrador
             limpiarPantalla();
-            //agregar usuario (documento, clave, saldo, rol)
-            //preguntar si quiere salir
-            volver = false;
+            agregarUsuario(estructura, ptrSize);
+            volver = menuSalida();
         }
         else if (numUsuario == 2){//usuario
             int opcionUsuario = menuUsuario();
             if (opcionUsuario == 1){//consultar saldo
+                consultarSaldo(estructura, size, docActual, true);
+                volver = false;
             }
             else if(opcionUsuario == 2){//retirar dinero
+                consultarSaldo(estructura, size, docActual);
+                retirarDinero(estructura, size, docActual);
+                volver = false;
             }
             else if(opcionUsuario == 0){//salir
                 limpiarPantalla();
@@ -58,13 +50,25 @@ int main(){
         }
     }
 
-
     // Escribir en el archivo base todos los datos que se agregaron y modificaron
     encriptar(estructura, ptrSize, ptrSemilla);
 
     //Mensaje de salida exitosa
     mensajeSalida();
+
+
+    //                  PARA MOSTRAR LA MATRIZ
+    /*
+    for (int i = 0; i < size; ++i) {
+        if (!(estructura[i][0]=="")){
+            for (int j = 0; j < 4; ++j) {
+                cout<<estructura[i][j]<<" ";
+            }
+            cout<<endl;
+        }
+    }
     */
+
 
     //              DELETES
     for (int i = 0; i < size; ++i) {
