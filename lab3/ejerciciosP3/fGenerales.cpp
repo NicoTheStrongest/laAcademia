@@ -9,45 +9,6 @@
 
 using namespace std;
 
-//              PARA ENCRIPTAR Y DESENCRIPTAR
-/*
-    string binario, archivo = "hola.txt";
-    //std::string texto = "01000001011000100100001101100100";
-    //                     01000001011000100100001101100100
-    std::string texto = "AbCd";
-    escribirArchivo(archivo, texto, true);
-    binario = char2binario(archivo);
-    cout<<"texto en binario: "<<binario;
-    */
-
-//              CONVERTIR STRING EN BINARIO PARA UTILIZAR BITWISE
-/*
-    std::string binStr = "11001100";  // cadena binaria de 8 bits
-    int num = std::stoi(binStr, 0, 2); // convierte la cadena a entero base 2
-    std::bitset<8> binResult(~num);  // Para mostrar los 8 bits del resultado
-    cout<<binResult;
-    */
-//                  PARA DIVIDIR EN N BLOQUES
-/*
-    int n, indice = 0, posiciones;
-    string binario = "01000001011000100100001101100100", bloque;
-    cout<<"ingrese la semilla: ";
-    cin>>n;
-    if(((int)size(binario))%n == 0){posiciones = ((int)size(binario))/n;}
-    else {posiciones = (((int)size(binario))/n)+1;}
-    std::string* arreglo = new std::string[posiciones];
-    for (int i = 0; i < (int)size(binario); i+=n) {
-        bloque = "";
-        for (int j = i; j < n+i; ++j) {
-            bloque += binario[j];
-        }
-        arreglo[indice] = bloque;
-        indice++;
-    }
-
-    delete [] arreglo;
-*/
-
 void desencriptar(string**& arreglo, int* size, int* semillaMain){
     //Desencripta el archivo del binario y lo guarda en la estructura dinamica.
     string nombreArchivo = "sudo.txt";
@@ -303,37 +264,37 @@ void encriptar(string**& arreglo, int* size, int* semilla){
 }
 
 
-// Función que expande un arreglo dinámico
+
 void expandirArreglo(string**& arr, int& size) {
-    // Paso 1: Crear un nuevo arreglo con una posición más
+    // Función que expande un arreglo dinámico
+    // Crear un nuevo arreglo con una posición más
     string** nuevoArr = new string*[size + 1];
     for (int i = 0; i < size+1; ++i) {
         nuevoArr[i] = new string[4];
     }
 
-    // Paso 2: Copiar elementos al nuevo arreglo
+    // Copiar elementos al nuevo arreglo
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < 4; ++j) {
             nuevoArr[i][j] = arr[i][j];
         }
     }
 
-    // Paso 3: Liberar la memoria del arreglo original
+    // Liberar la memoria del arreglo original
     for (int i = 0; i < size; ++i) {
         delete[] arr[i];
     }
     delete[] arr;
 
-    // Paso 4: Actualizar el puntero para que apunte al nuevo arreglo
+    // Actualizar el puntero para que apunte al nuevo arreglo
     arr = nuevoArr;
 
-    // Paso 5: Aumentar el tamaño
+    // Aumentar el tamaño
     size += 1;
 }
 
-// Función que abre un archivo, lo imprime y lo cierra
 void menuGeneral(const string& fileName) {
-    // Crear un objeto ifstream para leer el archivo
+    // Función que abre un archivo, lo imprime y lo cierra
     ifstream archivo(fileName);
 
     // Comprobar si el archivo se abrió correctamente
@@ -375,19 +336,112 @@ int opcionesMenuGeneral(const string& mensaje1, const string& mensaje2, const st
     }
 }
 
-int iniciarSesion(){
+
+
+bool menuSalida(){
+    //muestra menu salida y devulve false si quiere salir y true si quiere ir al menu unicial
+    limpiarPantalla();
+    string nombre = "prints/MenuSalida.txt";
+    menuGeneral(nombre);
+    string mensaje1 = "Elige una opcion (1, 2): ";
+    string mensaje2 = "Opción no valida, intenta de nuevo.";
+    const int size = 2;
+    string opcionesValidas[size] = {"1", "2"};
+    int opcionElegida = opcionesMenuGeneral(mensaje1, mensaje2, opcionesValidas, size);
+    if(opcionElegida == 1){return false;}
+    else if (opcionElegida == 2){return true;}
+}
+
+void agregarUsuario(string**& arreglo, int* size){
+    limpiarPantalla();
+    string nombre = "prints/MenuAdministrador.txt";
+    menuGeneral(nombre);
+    string documento;
+    cout<<"\nDocumento: ";
+    getline(cin, documento);
+    formatoDocumento(&documento);
+    string clave;
+    cout<<"\nClave (Si contine algun espacio se lo quito): ";
+    getline(cin, clave);
+    clave = quitarEspacios(clave);
+    string saldo;
+    cout<<"\nSaldo Inicial (solo numeros): $";
+    getline(cin, saldo);
+    validarSaldo(&saldo);
+    int role;
+    cout<<"\nElija un rol\n - Administrador -> 1 \n - Usuario -> 2\nRol : ";
+    cin>>role;
+    string rol;
+    rol = validarRol(role);
+    expandirArreglo(arreglo, *size);
+    arreglo[*size-1][0] = documento;
+    arreglo[*size-1][1] = clave;
+    arreglo[*size-1][2] = saldo;
+    arreglo[*size-1][3] = rol;
+}
+
+int iniciarSesion(string** arreglo, int size, string* docUsuario){
     //inicia sesion como usuario o administrador.
     limpiarPantalla();
     string nombre = "prints/MenuPrincipal.txt";
     menuGeneral(nombre);
+    int rol;
+    int* ptrRol = &rol;
     string documento;
     cout<<"Documento: ";
     getline(cin, documento);
-    //validar formato contraseña
-    //validar que sea la registrada con el archivo sudo, si si, iniciar sesion
+    if (documento != "0"){
+        //validar formato documento
+        bool documentoSi = validarDocumento(arreglo, size, documento);
+        while (documentoSi == false){
+            cout<<"Documento no registrado.\n";
+            cout<<"Documento: ";
+            getline(cin, documento);
+            documentoSi = validarDocumento(arreglo, size, documento);
+        }
+        //Validar Contraseña registrada.
+        string contrasena;
+        cout<<"Contrasena: ";
+        getline(cin, contrasena);
+        bool contra = validarContrasena(arreglo, size, documento, contrasena, ptrRol);
+        if(contra){
+            *docUsuario = documento;
+            return rol;
+        }
+        else{return 0;}
+    }
+    return 0;
+}
 
-    //return 0 para cuando quiera salir.
-    return 2;
+bool validarContrasena(string** arreglo, int size, string documento, string contrasena, int* rol){
+    //valida que la contrasena sea la registrada.
+    for (int i = 0; i < size; ++i) {
+        if(arreglo[i][0] == documento){
+            if(contrasena == arreglo[i][1]){
+                if(arreglo[i][3] == "Administrador"){*rol = 1;}
+                if(arreglo[i][3] == "Usuario"){*rol = 2;}
+                return true;
+            }
+            else{
+                int a;
+                limpiarPantalla();
+                cout<<"\nContrasena incorrecta rufian\n";
+                cout<<"\nIngrese un numero para continuar\n";
+                cin>>a;
+                return false;
+            }
+        }
+    }
+    return false;
+}
+
+bool validarDocumento(string** arreglo, int size, string documento){
+    //validar que solo el documento esté registrado.
+    for (int i = 0; i < size; ++i) {
+        if(arreglo[i][0] == documento){
+            return true;}
+    }
+    return false;
 }
 
 int menuUsuario(){
@@ -405,11 +459,55 @@ int menuUsuario(){
     return opcionElegida;
 }
 
+void retirarDinero(string** arreglo, int size, string documento){
+    //Retira dinero especifico del documento actual y actualiza su saldo.
+    limpiarPantalla();
+    int retiro;
+    cout<<"Cuanto dinero desea retirar: ";
+    cin>>retiro;
+    for (int i = 0; i < size; ++i) {
+        if(arreglo[i][0] == documento){
+            int saldoActual = stoi(arreglo[i][2]);
+            if (retiro>saldoActual){cout<<"No se pudo realizar el retiro\n"; return;}
+            else{
+                saldoActual = saldoActual - retiro - 1000;
+                arreglo[i][2] = to_string(saldoActual);
+                return;
+            }
+        }
+    }
+}
+
+void consultarSaldo(string** arreglo, int size, string documento, bool descontar){
+    //muestra saldo de la persona ingresada.
+    limpiarPantalla();
+    for (int i = 0; i < size; ++i) {
+        if(arreglo[i][0] == documento){
+            int saldo = stoi(arreglo[i][2]);
+            if (saldo<-5000){cout<<"\nNo se puede realizar consulta (saldo inferio a -5000)\n";}
+            else {
+                cout<<"Su saldo actual es: "<<arreglo[i][2]<<endl;
+                if (descontar == true){
+                    saldo = saldo - 1000;
+                    arreglo[i][2] = to_string(saldo);
+                    int a;
+                    cout<<"Presione 1 para continuar: ";
+                    cin>>a;
+                }
+            }
+            break;
+        }
+    }
+}
+
 void mensajeSalida(){
     //Imprime el mensaje cuando sale del programa.
+    limpiarPantalla();
     string nombre = "prints/MensajeSalida.txt";
     menuGeneral(nombre);
 }
+
+
 
 void limpiarPantalla(){
     // Imprime varias líneas en blanco para dar la ilusión de limpiar la pantalla
@@ -428,6 +526,72 @@ int pedirNumEntero(){
     }
     return numero;
 }
+
+bool validarNumeros(string cadena){
+    //valida que una cadena solo contenga numeros
+    for (int i = 0; i < (int)cadena.size(); ++i) {
+        if (!(cadena[i]>=48  && cadena[i]<=57)){return false;}
+    }
+    return true;
+}
+
+void formatoDocumento(string* documento){
+    //Valida que una cadena solo tengo numero y que tengo size 10;
+    string documento2;
+    bool docValido = validarNumeros(*documento);
+    if ((int)(*documento).size() != 10){docValido = false;}
+    while (docValido == false){
+        cout<<"Documento Invalido\n";
+        cout<<"Documento: ";
+        getline(cin, documento2);
+        docValido = validarNumeros(documento2);
+        if ((int)documento2.size() != 10){docValido = false;}
+        if (docValido == true){*documento = documento2;}
+    }
+}
+
+string quitarEspacios(string cadena){
+    //Toma una cadena de string y si tiene espacios se los quita y retorna la cadena sin espacios
+    string cadenaClear = "";
+    int tamano;
+    tamano = cadena.size();
+    for (int i = 0; i < tamano; ++i) {
+        if (cadena[i]==' '){
+            cadenaClear = cadenaClear;
+        }
+        else {
+            cadenaClear = cadenaClear + cadena[i];
+        }
+    }
+    return cadenaClear;
+}
+
+void validarSaldo(string *saldo){
+    bool saldoOk = validarNumeros(*saldo);
+    string saldo2;
+    while(saldoOk == false){
+        cout<<"Saldo Inicial (solo numeros): $";
+        getline(cin, saldo2);
+        saldoOk = validarNumeros(saldo2);
+        if (saldoOk == true){*saldo = saldo2;}
+    }
+}
+
+string validarRol(int rol){
+    //valida que el rol sea 1 O 2.
+    bool rolOk = false;
+    string rolVerdadero;
+    int rol2;
+    if(rol == 1){return rolVerdadero = "Administrador";}
+    if(rol == 2){return rolVerdadero = "Usuario";}
+    while (rolOk == false){
+        cout<<"\nElija un rol\n - 1 -> Administrador\n - 2 -> Usuario\nRol : ";
+        cin>>rol2;
+        if(rol2 == 1){return rolVerdadero = "Administrador";}
+        if(rol2 == 2){return rolVerdadero = "Usuario";}
+    }
+}
+
 
 
 
