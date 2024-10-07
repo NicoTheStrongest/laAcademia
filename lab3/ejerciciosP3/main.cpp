@@ -19,7 +19,14 @@ int main(){
     string docActual;
 
     desencriptar(estructura, ptrSize, ptrSemilla);
-
+    for (int i = 0; i < size; ++i) {
+        if (!(estructura[i][0]=="")){
+            for (int j = 0; j < 4; ++j) {
+                cout<<estructura[i][j]<<" ";
+            }
+            cout<<endl;
+        }
+    }
     // Trabajo bajo la estructura de datos.
     bool volver = true;
     while (volver){
