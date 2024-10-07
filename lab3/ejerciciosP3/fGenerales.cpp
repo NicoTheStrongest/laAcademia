@@ -11,7 +11,7 @@ using namespace std;
 
 void desencriptar(string**& arreglo, int* size, int* semillaMain){
     //Desencripta el archivo del binario y lo guarda en la estructura dinamica.
-    string nombreArchivo = "sudo.txt";
+    string nombreArchivo = "./../../sudo.txt";
     fstream archivo(nombreArchivo, ios::in);
     if (!archivo.is_open()){
         cout << "Error al abrir el archivo\n";
@@ -128,7 +128,7 @@ void desencriptar(string**& arreglo, int* size, int* semillaMain){
 }
 
 void encriptar(string**& arreglo, int* size, int* semilla){
-    string nombreArchivo = "sudo.txt";
+    string nombreArchivo = "./../../sudo.txt";
     fstream archivo;
     archivo.open(nombreArchivo, ios::out | ios::trunc);
     if (!archivo.is_open()){
@@ -341,7 +341,7 @@ int opcionesMenuGeneral(const string& mensaje1, const string& mensaje2, const st
 bool menuSalida(){
     //muestra menu salida y devulve false si quiere salir y true si quiere ir al menu unicial
     limpiarPantalla();
-    string nombre = "prints/MenuSalida.txt";
+    string nombre = "./../../prints/MenuSalida.txt";
     menuGeneral(nombre);
     string mensaje1 = "Elige una opcion (1, 2): ";
     string mensaje2 = "Opción no valida, intenta de nuevo.";
@@ -354,7 +354,7 @@ bool menuSalida(){
 
 void agregarUsuario(string**& arreglo, int* size){
     limpiarPantalla();
-    string nombre = "prints/MenuAdministrador.txt";
+    string nombre = "./../../prints/MenuAdministrador.txt";
     menuGeneral(nombre);
     string documento;
     cout<<"\nDocumento: ";
@@ -383,7 +383,7 @@ void agregarUsuario(string**& arreglo, int* size){
 int iniciarSesion(string** arreglo, int size, string* docUsuario){
     //inicia sesion como usuario o administrador.
     limpiarPantalla();
-    string nombre = "prints/MenuPrincipal.txt";
+    string nombre = "./../../prints/MenuPrincipal.txt";
     menuGeneral(nombre);
     int rol;
     int* ptrRol = &rol;
@@ -447,7 +447,7 @@ bool validarDocumento(string** arreglo, int size, string documento){
 int menuUsuario(){
     //imprimer el menu de usuario y retorna un int relacionado a la actividiad para realizar
     limpiarPantalla();
-    string nombre = "prints/MenuUsuario.txt";
+    string nombre = "./../../prints/MenuUsuario.txt";
     menuGeneral(nombre);
     string mensaje1 = "Elige una opcion (1, 2, 0): ";
     string mensaje2 = "Opción no valida, intenta de nuevo.";
@@ -503,7 +503,7 @@ void consultarSaldo(string** arreglo, int size, string documento, bool descontar
 void mensajeSalida(){
     //Imprime el mensaje cuando sale del programa.
     limpiarPantalla();
-    string nombre = "prints/MensajeSalida.txt";
+    string nombre = "./../../prints/MensajeSalida.txt";
     menuGeneral(nombre);
 }
 
