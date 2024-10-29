@@ -654,7 +654,7 @@ void Red:: calcularRuta(){
             }
         }
     }
-
+    // algoritmo de Dijkstra - teoria de grafos y redes
     string ruta;
     map<string,int> costoMinimo;
     map<string, string> anterior;
