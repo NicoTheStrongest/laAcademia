@@ -1,0 +1,9 @@
+==================================
+
+       GESTION DE ARCHIVO
+
+1-> CARGAR Enrutadores.txt.
+2-> CARGAR simulacion.csv.
+
+0-> SALIR.
+==================================

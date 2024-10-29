@@ -18,17 +18,22 @@ class Red
 private:
     //Atributos
     vector<Enrutador> enrutadores;
+    int cargaDatos;
 
 public:
     //Constructor
     Red();
     //Getter
     vector<Enrutador> getEnrutadores() const;
+    //setters
+    void setCargaDatos(int opcion);
     //Metodos
     void cargarDatos();
+    void cargarDatosSimulacion();
     void agregarEnrutador();
     void agregarEnlaceLectura(string nombre1, string nombre2, int costo);
-    void actualizarEnlaces();
+    void agregarEnlaces();
+    void eliminarEnlacesRed();
     void removerEnrutador();
     void actualizarRed();
     void mostrarRed();

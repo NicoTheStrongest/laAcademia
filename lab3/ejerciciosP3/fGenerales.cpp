@@ -344,7 +344,7 @@ bool menuSalida(){
     string nombre = "./../../prints/MenuSalida.txt";
     menuGeneral(nombre);
     string mensaje1 = "Elige una opcion (1, 2): ";
-    string mensaje2 = "Opción no valida, intenta de nuevo.";
+    string mensaje2 = "Opcion no valida, intenta de nuevo.";
     const int size = 2;
     string opcionesValidas[size] = {"1", "2"};
     int opcionElegida = opcionesMenuGeneral(mensaje1, mensaje2, opcionesValidas, size);

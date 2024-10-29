@@ -1,0 +1,15 @@
+==================================
+
+	GESTION DE RED
+
+1-> AGREGAR ENRUTADOR.
+2-> ELIMINAR ENRUTADOR.
+3-> AGREGAR ENLACE.
+4-> ELIMINAR ENLACE.
+5-> MOSTRAR TABLA.
+6-> COSTO DE ENVIO.
+7-> MEJOR RUTA.
+8-> SIMULACION.
+
+0-> SALIR.
+==================================

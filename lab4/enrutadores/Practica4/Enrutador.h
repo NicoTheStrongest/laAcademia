@@ -23,6 +23,7 @@ public:
     void setNombre(string nuevoNombre);
     //Metodos
     void agregarVecino(const string& origen, const string& destino, int costo);
+    void eliminarEnlaceEnrutador(const string& origen, const string& destino);
     void eliminarVecino(string& destino);
     void mostrarTabla();
     int obtenerCosto(const string& origen, const string& destino)const;

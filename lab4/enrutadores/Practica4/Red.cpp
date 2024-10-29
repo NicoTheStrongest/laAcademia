@@ -1,11 +1,17 @@
 #include "Red.h"
+#include <algorithm> // Para std::transform
+#include <cctype>    // Para std::toupper
 
 using namespace std;
 
 Red::Red() {}
 
+void Red:: setCargaDatos(int opcion){
+    this->cargaDatos = opcion;
+}
+
 //Metodo para cargar los datos de la red
-void Red::cargarDatos(){
+void Red:: cargarDatos(){
     //Leo el archivo linea a linea
     string nombreArchivo = "./../../Enrutadores.txt";
     ifstream archivo(nombreArchivo);
@@ -33,7 +39,57 @@ void Red::cargarDatos(){
     }
     //Costos
     int fila = 0;
-    while (getline(archivo, linea) && fila < nombresEnrutador.size()){
+    while (getline(archivo, linea) && fila < (int)nombresEnrutador.size()){
+        int posicion = linea.find(';');
+        int columna = 0;
+        //Leo cada costo en la fila
+        while (posicion != string::npos){
+            string costoStr = linea.substr(0, posicion);
+            if(columna > 0){
+                int costo = stoi(costoStr);
+                if(costo > 0){
+                    agregarEnlaceLectura(nombresEnrutador[fila], nombresEnrutador[columna - 1], costo);
+                }
+            }
+            linea.erase(0, posicion + 1);
+            posicion = linea.find(";");
+            columna++;
+        }
+        fila++;
+    }
+    archivo.close();
+}
+
+void Red:: cargarDatosSimulacion(){
+    //Leo el archivo linea a linea del csv
+    string nombreArchivo = "./../../simulacion.csv";
+    ifstream archivo(nombreArchivo);
+    if (!archivo.is_open()){
+        cout << "Error al abrir el archivo." << endl;
+        return;
+    }
+    //Enrutadores
+    vector<string> nombresEnrutador;
+    string linea;
+    if(getline(archivo, linea)){
+        linea.erase(0, 1);
+        int posicion = linea.find(';');
+        //Leo cada nombre en la linea
+        while(posicion != string::npos){
+            nombresEnrutador.push_back(linea.substr(0,posicion));
+            linea.erase(0, posicion + 1);
+            posicion = linea.find(";");
+        }
+        nombresEnrutador.push_back(linea);
+    }
+    //Creo el enrutador en la red
+    for(string& nombre : nombresEnrutador){
+        Enrutador nuevo(nombre);//Objeto de Enrutador
+        this->enrutadores.push_back(nuevo);
+    }
+    //Costos
+    int fila = 0;
+    while (getline(archivo, linea) && fila < (int)nombresEnrutador.size()){
         int posicion = linea.find(';');
         int columna = 0;
         //Leo cada costo en la fila
@@ -55,7 +111,7 @@ void Red::cargarDatos(){
 }
 
 //Metodo para crear o agregar un enalce entre dos enrutadores en la lectura del archivo
-void Red::agregarEnlaceLectura(string enrutador1, string enrutador2, int costo){
+void Red:: agregarEnlaceLectura(string enrutador1, string enrutador2, int costo){
     //Referencia a los enrutadores
     Enrutador& routerOrigen = obtenerEnrutador(enrutador1);
     Enrutador& routerDestino = obtenerEnrutador(enrutador2);
@@ -65,63 +121,71 @@ void Red::agregarEnlaceLectura(string enrutador1, string enrutador2, int costo){
 }
 
 //Metodo para agregar un enrutador a la red
-void Red::agregarEnrutador(){
-    cout << "*****AGREGAR ENRUTADOR*****" << endl;
+void Red:: agregarEnrutador(){
+    cout << "\n\n*****AGREGAR ENRUTADOR*****\n\n" << endl;
     string nombre;
     cout << "Ingrese el nombre del nuevo enrutador (Un solo caracter): ";
     cin >> nombre;
     //Verifico que si sea un solo caracter
-    if(nombre.length() != 1){
+    while(nombre.length() != 1){
         cout << "El nombre del enrutador debe ser un solo caracter." << endl;
-        return;
+        cout << "Ingrese el nombre del nuevo enrutador (Un solo caracter): ";
+        cin >> nombre;
     }
+    nombre[0] = toupper(nombre[0]);
     //Verifico que no exista
     for(const auto& enrutador : enrutadores){
-        if(nombre == enrutador.getNombre()){
+        while(nombre == enrutador.getNombre()){
             cout << "El enrutador " << nombre << " ya existe en la red." << endl;
-            system("pause");
-            return;
+            cout << "Ingrese el nombre del nuevo enrutador (Un solo caracter): ";
+            cin >> nombre;
+            while(nombre.length() != 1){
+                cout << "El nombre del enrutador debe ser un solo caracter." << endl;
+                cout << "Ingrese el nombre del nuevo enrutador (Un solo caracter): ";
+                cin >> nombre;
+            }
+            nombre[0] = toupper(nombre[0]);
         }
     }
-    //Si no existe lo agrego
-    Enrutador nuevo(nombre);//Objeto de Enrutador
-    //Actualizo conexiones para ca enrutador en la red
+    //Si no existe creo el nuevo enrutador
+    Enrutador nuevo(nombre);
+    //pido las conexiones para cada enrutador en la red
     for(auto& enrutador : enrutadores){
         int costo;
         cout << "Costo de " << nombre << "-" << enrutador.getNombre() << ": ";
         cin >> costo;
-        if(costo < 0){
+        while(costo != -1 && costo < 0){
             cout << "El costo debe ser mayor o igual a cero." << endl;
-            system("pause");
-            return;
+            cout << "Costo de " << nombre << "-" << enrutador.getNombre() << ": ";
+            cin >> costo;
         }
-        else{
-            nuevo.agregarVecino(nombre,enrutador.getNombre(), costo);//Costo nuevo a existente
-            enrutador.agregarVecino(enrutador.getNombre(), nombre, costo);//Costo existente a nuevo
-        }
+        nuevo.agregarVecino(nombre,enrutador.getNombre(), costo);//Costo nuevo a existente
+        enrutador.agregarVecino(enrutador.getNombre(), nombre, costo);//Costo existente a nuevo
     }
     enrutadores.push_back(nuevo);
-    actualizarRed(); //Actulaiza tabla de enrutamiento
-    cout << "Enrutador " << nombre << " agregado existosamente." << endl;
+    //Actualiza la tabla de enrutamiento
+    actualizarRed();
+    cout << "\n\n******Enrutador " << nombre << " agregado existosamente******\n\n" << endl;
     system("pause");
 }
 
 //Metodo para eliminar un enrutador de la red
-void Red::removerEnrutador(){
-    cout << "*****ELIMINAR ENRUTADOR*****" << endl;
+void Red:: removerEnrutador(){
+    cout << "\n\n*****ELIMINAR ENRUTADOR*****\n\n" << endl;
     string nombre;
     cout << "Ingrese el nombre del enrutador que desea eliminar(Un solo caracter): ";
     cin >> nombre;
     //Verifico que si sea un solo caracter
-    if(nombre.length() != 1){
+    while(nombre.length() != 1){
         cout << "El nombre del enrutador debe ser un solo caracter." << endl;
-        system("pause");
-        return;
+        cout << "Ingrese el nombre del enrutador que desea eliminar(Un solo caracter): ";
+        cin >> nombre;
     }
+    nombre[0] = toupper(nombre[0]);
     //Verifico que exista
     bool existe = false;
     int posicion = 0;
-    for(int i = 0; i < enrutadores.size(); i++){
+    for(int i = 0; i < (int)enrutadores.size(); i++){
         if(enrutadores[i].getNombre() == nombre){
             existe = true;
             posicion = i;
@@ -147,7 +211,7 @@ void Red::removerEnrutador(){
 }
 
 //Metodo para obtener el nombre de un enrutador
-Enrutador& Red::obtenerEnrutador(const string& enrutador){
+Enrutador& Red:: obtenerEnrutador(const string& enrutador){
     for (auto& router : enrutadores){
         if (router.getNombre() == enrutador){
             return router;
@@ -158,15 +222,21 @@ Enrutador& Red::obtenerEnrutador(const string& enrutador){
 }
 
 //Metodo para obtener el costo entre dos enrutadores
-int Red::obtenerCosto(const string& enrutador1, const string& enrutador2){
+int Red:: obtenerCosto(const string& enrutador1, const string& enrutador2){
     Enrutador& routerOrigen = obtenerEnrutador(enrutador1);
     return routerOrigen.obtenerCosto(enrutador1,enrutador2);
 }
 
 //Metodo para actualizar la red
-void Red::actualizarRed(){
+void Red:: actualizarRed(){
     // Abrir el archivo en modo escritura
-    string nombreArchivo = "./../../Enrutadores.txt";
+    string nombreArchivo;
+    if(this->cargaDatos == 1){
+        nombreArchivo = "./../../Enrutadores.txt";
+    }
+    else if (this->cargaDatos == 2){
+        nombreArchivo = "./../../simulacion.csv";
+    }
     ofstream archivo(nombreArchivo);
     if (!archivo.is_open()) {
         cout << "Error al abrir el archivo." << endl;
@@ -199,64 +269,206 @@ void Red::actualizarRed(){
     archivo.close();
 }
 
-//Metodo para agregar o actualizar enlace
-void Red::actualizarEnlaces(){
-    cout << "*****ACTUALIZACION DE ENLACE*****" << endl;
+//Metodo para agregar enlace
+void Red:: agregarEnlaces(){
+    cout << "\n\n*****AGREGAR DE ENLACE*****\n\n" << endl;
     string enrutador1, enrutador2;
     int costo;
     cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
     cin >> enrutador1;
     //Verifico que si sea un solo caracter
-    if(enrutador1.length() != 1){
+    while(enrutador1.length() != 1){
         cout << "El nombre del enrutador debe ser un solo caracter." << endl;
-        system("pause");
-        return;
+        cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
+        cin >> enrutador1;
     }
-    cout << "Ingrese el nombre del enrutador destino (Un solo caracer): ";
+    enrutador1[0] = toupper(enrutador1[0]);
+
+    //Verifico que exista
+    bool existe1 = false;
+    for(int i = 0; i < (int)enrutadores.size(); i++){
+        if(enrutadores[i].getNombre() == enrutador1){
+            existe1 = true;
+            break;
+        }
+    }
+    while(!existe1){
+        cout << "El enrutador no se encuentra registrado en la red." << endl;
+        cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
+        cin >> enrutador1;
+        //Verifico que si sea un solo caracter
+        while(enrutador1.length() != 1){
+            cout << "El nombre del enrutador debe ser un solo caracter." << endl;
+            cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
+            cin >> enrutador1;
+        }
+        enrutador1[0] = toupper(enrutador1[0]);
+
+        //Verifico que exista
+        for(int i = 0; i < (int)enrutadores.size(); i++){
+            if(enrutadores[i].getNombre() == enrutador1){
+                existe1 = true;
+                break;
+            }
+        }
+    }
+
+    cout << "Ingrese el nombre del enrutador destino (Un solo caracter): ";
     cin >> enrutador2;
     //Verifico que si sea un solo caracter
-    if(enrutador2.length() != 1){
+    while(enrutador2.length() != 1){
         cout << "El nombre del enrutador debe ser un solo caracter." << endl;
-        system("pause");
-        return;
+        cout << "Ingrese el nombre del enrutador destino (Un solo caracter): ";
+        cin >> enrutador2;
     }
+    enrutador2[0] = toupper(enrutador2[0]);
+
+    //Verifico que exista
+    bool existe2 = false;
+    for(int i = 0; i < (int)enrutadores.size(); i++){
+        if(enrutadores[i].getNombre() == enrutador1){
+            existe2 = true;
+            break;
+        }
+    }
+    while(!existe2){
+        cout << "El enrutador no se encuentra registrado en la red." << endl;
+        cout << "Ingrese el nombre del enrutador destino (Un solo caracter): ";
+        cin >> enrutador2;
+        //Verifico que si sea un solo caracter
+        while(enrutador2.length() != 1){
+            cout << "El nombre del enrutador debe ser un solo caracter." << endl;
+            cout << "Ingrese el nombre del enrutador destino (Un solo caracer): ";
+            cin >> enrutador2;
+        }
+        enrutador2[0] = toupper(enrutador2[0]);
+
+        //Verifico que exista
+        existe2 = false;
+        for(int i = 0; i < (int)enrutadores.size(); i++){
+            if(enrutadores[i].getNombre() == enrutador1){
+                existe2 = true;
+                break;
+            }
+        }
+    }
+
     cout << "Ingrese el costo de " << enrutador1 << "-" << enrutador2 << ": ";
     cin >> costo;
-    if(costo < 0){
+    while(costo != -1 && costo < 0){
         cout << "El costo debe ser mayor o igual a cero." << endl;
-        system("pause");
-        return;
-    }
-    //Verifico que esten en la red
-    bool nombre1 = false, nombre2 = false;
-    for(auto& enrutador : enrutadores){
-        if(enrutador.getNombre() == enrutador1){
-            nombre1 = true;
-        }
-        else if(enrutador.getNombre() == enrutador2){
-            nombre2 = true;
-        }
-    }
-    //Si no existen
-    if(nombre1 == false || nombre2 == false){
-        cout << "Uno o ambos enrutadores no existen en la red." << endl;
-        system("pause");
-        return;
+        cout << "Ingrese el costo de " << enrutador1 << "-" << enrutador2 << ": ";
+        cin >> costo;
     }
     //Referencia a los enrutadores
     Enrutador& routerOrigen = obtenerEnrutador(enrutador1);
     Enrutador& routerDestino = obtenerEnrutador(enrutador2);
     //Actualizo enlaces
-    routerOrigen.agregarVecino(enrutador1, enrutador2,costo);
-    routerDestino.agregarVecino(enrutador2, enrutador1,costo);
-    cout << "Enlace actualizado existosamente." << endl;
-    actualizarRed();//Actualizo la tabla de enrutamiento
+    routerOrigen.agregarVecino(enrutador1, enrutador2, costo);
+    routerDestino.agregarVecino(enrutador2, enrutador1, costo);
+    cout << "\n\nEnlace agregado existosamente.\n\n" << endl;
+    actualizarRed();            //Actualizo la tabla de enrutamiento
+    system("pause");
+}
+
+//Metodo para eliminar enlace
+void Red:: eliminarEnlacesRed(){
+    cout << "\n\n*****ELIMINAR DE ENLACE*****\n\n" << endl;
+    string enrutador1, enrutador2;
+    cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
+    cin >> enrutador1;
+    //Verifico que si sea un solo caracter
+    while(enrutador1.length() != 1){
+        cout << "El nombre del enrutador debe ser un solo caracter." << endl;
+        cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
+        cin >> enrutador1;
+    }
+    enrutador1[0] = toupper(enrutador1[0]);
+
+    //Verifico que exista
+    bool existe1 = false;
+    for(int i = 0; i < (int)enrutadores.size(); i++){
+        if(enrutadores[i].getNombre() == enrutador1){
+            existe1 = true;
+            break;
+        }
+    }
+    while(!existe1){
+        cout << "El enrutador no se encuentra registrado en la red." << endl;
+        cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
+        cin >> enrutador1;
+        //Verifico que si sea un solo caracter
+        while(enrutador1.length() != 1){
+            cout << "El nombre del enrutador debe ser un solo caracter." << endl;
+            cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
+            cin >> enrutador1;
+        }
+        enrutador1[0] = toupper(enrutador1[0]);
+
+        //Verifico que exista
+        for(int i = 0; i < (int)enrutadores.size(); i++){
+            if(enrutadores[i].getNombre() == enrutador1){
+                existe1 = true;
+                break;
+            }
+        }
+    }
+
+    cout << "Ingrese el nombre del enrutador destino (Un solo caracter): ";
+    cin >> enrutador2;
+    //Verifico que si sea un solo caracter
+    while(enrutador2.length() != 1){
+        cout << "El nombre del enrutador debe ser un solo caracter." << endl;
+        cout << "Ingrese el nombre del enrutador destino (Un solo caracter): ";
+        cin >> enrutador2;
+    }
+    enrutador2[0] = toupper(enrutador2[0]);
+
+    //Verifico que exista
+    bool existe2 = false;
+    for(int i = 0; i < (int)enrutadores.size(); i++){
+        if(enrutadores[i].getNombre() == enrutador1){
+            existe2 = true;
+            break;
+        }
+    }
+    while(!existe2){
+        cout << "El enrutador no se encuentra registrado en la red." << endl;
+        cout << "Ingrese el nombre del enrutador destino (Un solo caracter): ";
+        cin >> enrutador2;
+        //Verifico que si sea un solo caracter
+        while(enrutador2.length() != 1){
+            cout << "El nombre del enrutador debe ser un solo caracter." << endl;
+            cout << "Ingrese el nombre del enrutador destino (Un solo caracer): ";
+            cin >> enrutador2;
+        }
+        enrutador2[0] = toupper(enrutador2[0]);
+
+        //Verifico que exista
+        existe2 = false;
+        for(int i = 0; i < (int)enrutadores.size(); i++){
+            if(enrutadores[i].getNombre() == enrutador1){
+                existe2 = true;
+                break;
+            }
+        }
+    }
+    //Referencia a los enrutadores
+    Enrutador& routerOrigen = obtenerEnrutador(enrutador1);
+    Enrutador& routerDestino = obtenerEnrutador(enrutador2);
+
+    //elimina enlaces
+    routerOrigen.eliminarEnlaceEnrutador(enrutador1, enrutador2);
+    routerDestino.eliminarEnlaceEnrutador(enrutador2, enrutador1);
+
+    cout << "\n\nEnlace eliminado existosamente.\n\n" << endl;
+    actualizarRed();            //Actualizo la tabla de enrutamiento
     system("pause");
 }
 
 //Metodo para mostrar la tabla de enrutamiento
-void Red::mostrarRed(){
-    cout << "*****TABLA DE ENRUTAMIENTO*****" << endl;
+void Red:: mostrarRed(){
+    cout << "\n\n*****TABLA DE ENRUTAMIENTO*****\n\n" << endl;
     for(auto& enrutador : enrutadores){
         enrutador.mostrarTabla();
     }
@@ -264,44 +476,89 @@ void Red::mostrarRed(){
 }
 
 //Metodo para calcular el costo de un enrutador a otro
-void Red::calcularCosto(){
+void Red:: calcularCosto(){
     cout << "*****CALCULO DE COSTOS DE ENVIO*****" << endl;
     string origen, destino;
     cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
     cin >> origen;
     //Verifico que si sea un solo caracter
-    if(origen.length() != 1){
+    while(origen.length() != 1){
         cout << "El nombre del enrutador debe ser un solo caracter." << endl;
-        system("pause");
-        return;
+        cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
+        cin >> origen;
     }
+    origen[0] = toupper(origen[0]);
+    //Verifico que exista
+    bool existe1 = false;
+    for(int i = 0; i < (int)enrutadores.size(); i++){
+        if(enrutadores[i].getNombre() == origen){
+            existe1 = true;
+            break;
+        }
+    }
+    while(!existe1){
+        cout << "El enrutador no se encuentra registrado en la red." << endl;
+        cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
+        cin >> origen;
+        //Verifico que si sea un solo caracter
+        while(origen.length() != 1){
+            cout << "El nombre del enrutador debe ser un solo caracter." << endl;
+            cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
+            cin >> origen;
+        }
+        origen[0] = toupper(origen[0]);
+        //Verifico que exista
+        existe1 = false;
+        for(int i = 0; i < (int)enrutadores.size(); i++){
+            if(enrutadores[i].getNombre() == origen){
+                existe1 = true;
+                break;
+            }
+        }
+    }
+
+
     cout << "Ingrese el nombre del enrutador destino (Un solo caracter): ";
     cin >> destino;
     //Verifico que si sea un solo caracter
-    if(destino.length() != 1){
+    while(destino.length() != 1){
         cout << "El nombre del enrutador debe ser un solo caracter." << endl;
-        system("pause");
-        return;
+        cout << "Ingrese el nombre del enrutador destino (Un solo caracter): ";
+        cin >> destino;
     }
+    destino[0] = toupper(destino[0]);
+    //Verifico que exista
+    bool existe2 = false;
+    for(int i = 0; i < (int)enrutadores.size(); i++){
+        if(enrutadores[i].getNombre() == destino){
+            existe2 = true;
+            break;
+        }
+    }
+    while(!existe2){
+        cout << "El enrutador no se encuentra registrado en la red." << endl;
+        cout << "Ingrese el nombre del enrutador destino (Un solo caracter): ";
+        cin >> destino;
+        //Verifico que si sea un solo caracter
+        while(destino.length() != 1){
+            cout << "El nombre del enrutador debe ser un solo caracter." << endl;
+            cout << "Ingrese el nombre del enrutador destino (Un solo caracter): ";
+            cin >> destino;
+        }
+        destino[0] = toupper(destino[0]);
+        //Verifico que exista
+        existe2 = false;
+        for(int i = 0; i < (int)enrutadores.size(); i++){
+            if(enrutadores[i].getNombre() == destino){
+                existe2 = true;
+                break;
+            }
+        }
+    }
+
     //Si son iguales
     if(origen == destino){
         cout << "Origen y destino son iguales no hay costo para enviar el paquete." << endl;
-        system("pause");
-        return;
-    }
-    //Verifico que esten en la red
-    bool nombre1 = false, nombre2 = false;
-    for(auto& enrutador : enrutadores){
-        if(enrutador.getNombre() == origen){
-            nombre1 = true;
-        }
-        else if(enrutador.getNombre() == destino){
-            nombre2 = true;
-        }
-    }
-    //Si no existen
-    if(nombre1 == false || nombre2 == false){
-        cout << "Uno o ambos enrutadores no existen en la red." << endl;
         system("pause");
         return;
     }
@@ -318,51 +575,91 @@ void Red::calcularCosto(){
 }
 
 //Metodo para calcular la mejor ruta para enviar un paquete
-void Red::calcularRuta(){
+void Red:: calcularRuta(){
     cout << "*****MEJOR RUTA DE ENVIO*****" << endl;
     string origen, destino;
+    cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
+    cin >> origen;
+    //Verifico que si sea un solo caracter
+    while(origen.length() != 1){
+        cout << "El nombre del enrutador debe ser un solo caracter." << endl;
+        cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
+        cin >> origen;
+    }
+    origen[0] = toupper(origen[0]);
+    //Verifico que exista
+    bool existe1 = false;
+    for(int i = 0; i < (int)enrutadores.size(); i++){
+        if(enrutadores[i].getNombre() == origen){
+            existe1 = true;
+            break;
+        }
+    }
+    while(!existe1){
+        cout << "El enrutador no se encuentra registrado en la red." << endl;
+        cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
+        cin >> origen;
+        //Verifico que si sea un solo caracter
+        while(origen.length() != 1){
+            cout << "El nombre del enrutador debe ser un solo caracter." << endl;
+            cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
+            cin >> origen;
+        }
+        origen[0] = toupper(origen[0]);
+        //Verifico que exista
+        existe1 = false;
+        for(int i = 0; i < (int)enrutadores.size(); i++){
+            if(enrutadores[i].getNombre() == origen){
+                existe1 = true;
+                break;
+            }
+        }
+    }
+
+
+    cout << "Ingrese el nombre del enrutador destino (Un solo caracter): ";
+    cin >> destino;
+    //Verifico que si sea un solo caracter
+    while(destino.length() != 1){
+        cout << "El nombre del enrutador debe ser un solo caracter." << endl;
+        cout << "Ingrese el nombre del enrutador destino (Un solo caracter): ";
+        cin >> destino;
+    }
+    destino[0] = toupper(destino[0]);
+    //Verifico que exista
+    bool existe2 = false;
+    for(int i = 0; i < (int)enrutadores.size(); i++){
+        if(enrutadores[i].getNombre() == destino){
+            existe2 = true;
+            break;
+        }
+    }
+    while(!existe2){
+        cout << "El enrutador no se encuentra registrado en la red." << endl;
+        cout << "Ingrese el nombre del enrutador destino (Un solo caracter): ";
+        cin >> destino;
+        //Verifico que si sea un solo caracter
+        while(destino.length() != 1){
+            cout << "El nombre del enrutador debe ser un solo caracter." << endl;
+            cout << "Ingrese el nombre del enrutador destino (Un solo caracter): ";
+            cin >> destino;
+        }
+        destino[0] = toupper(destino[0]);
+        //Verifico que exista
+        existe2 = false;
+        for(int i = 0; i < (int)enrutadores.size(); i++){
+            if(enrutadores[i].getNombre() == destino){
+                existe2 = true;
+                break;
+            }
+        }
+    }
+
     string ruta;
     map<string,int> costoMinimo;
     map<string, string> anterior;
     vector<string> enrutadoresCalculados;
-    cout << "Ingrese el nombre del enrutador origen (Un solo caracter): ";
-    cin >> origen;
-    //Verifico que si sea un solo caracter
-    if(origen.length() != 1){
-        cout << "El nombre del enrutador debe ser un solo caracter." << endl;
-        system("pause");
-        return;
-    }
-    cout << "Ingrese el nombre del enrutador destino (Un solo caracter): ";
-    cin >> destino;
-    //Verifico que si sea un solo caracter
-    if(destino.length() != 1){
-        cout << "El nombre del enrutador debe ser un solo caracter." << endl;
-        system("pause");
-        return;
-    }
-    //Si son iguales
-    if(origen == destino){
-        cout << "Origen y destino son iguales no hay costo para enviar el paquete." << endl;
-        system("pause");
-        return;
-    }
-    //Verifico que esten en la red
-    bool nombre1 = false, nombre2 = false;
-    for(auto& enrutador : enrutadores){
-        if(enrutador.getNombre() == origen){
-            nombre1 = true;
-        }
-        else if(enrutador.getNombre() == destino){
-            nombre2 = true;
-        }
-    }
-    //Si no existen
-    if(nombre1 == false || nombre2 == false){
-        cout << "Uno o ambos enrutadores no existen en la red." << endl;
-        system("pause");
-        return;
-    }
+
     for(const auto& enrutador : enrutadores){
         costoMinimo[enrutador.getNombre()] = 999999;//No se ha encontrado costo minimo
     }
@@ -427,7 +724,7 @@ void Red::calcularRuta(){
 }
 
 //Metodo para generar una red
-void Red::generarRedAleatoria(){
+void Red:: generarRedAleatoria(){
     string nombres = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     srand(static_cast<unsigned>(time(0)));
     int cantEnrutadores = 1 + rand() % nombres.size();
