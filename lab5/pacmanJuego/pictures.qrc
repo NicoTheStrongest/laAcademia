@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>sprites/animations.gif</file>
+        <file>sprites/ghost.png</file>
+        <file>sprites/sample.jpeg</file>
+        <file>sprites/sample.png</file>
+        <file>sprites/Screen Shot 2021-12-15 at 16.18.24.png</file>
+    </qresource>
+</RCC>
