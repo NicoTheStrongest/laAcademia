@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+
+#include "Pacman.h"
 #include <QMainWindow>
 #include <QGraphicsItem>
 #include <QGraphicsScene> // Paquete para control de scena
@@ -24,12 +26,20 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+
+    //void keyPressEvent(QKeyEvent *event);
+
     QPixmap* mapa;
     QTimer timer;
     vector<vector<int>> zonas;
-    int fps = 30;
-    int oneBloqueSize = 20;
+    pacman* pacmanInicial;
+    int oneBloqueSize;
+    int oneFoodSize;
+
     void drawWalls();
+    void drawFood();
+    void eat();
+
 private:
     Ui::MainWindow *ui;
     // QGraphicsView* view;     // Vista para mostrar la escena
