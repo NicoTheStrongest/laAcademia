@@ -9,8 +9,7 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
-{
+    , ui(new Ui::MainWindow){
     // Configurar la interfaz visual desde el archivo .ui
     ui->setupUi(this);
     scene = new QGraphicsScene(this);
@@ -18,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     scene->setBackgroundBrush(brush);
     oneFoodSize = 6;
     oneBloqueSize = 20;
+    score = 0;
 
     zonas = {
         {1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1,1,1,1,1, 1},
@@ -29,9 +29,9 @@ MainWindow::MainWindow(QWidget *parent)
         {1,2,2,2,2, 2,1,2,2,2, 1,2,2,2,1, 2,2,2,2,2, 1},
         {1,1,1,1,1, 2,1,1,1,2, 1,2,1,1,1, 2,1,1,1,1, 1},
         {0,0,0,0,1, 2,1,2,2,2, 2,2,2,2,1, 2,1,0,0,0, 0},
-        {1,1,1,1,1, 2,1,2,1,1, 2,1,1,2,1, 2,1,1,1,1, 1},
-        {2,2,2,2,2, 2,2,2,1,2, 2,2,1,2,2, 2,2,2,2,2, 2},
-        {1,1,1,1,1, 2,1,2,1,2, 2,2,1,2,1, 2,1,1,1,1, 1},
+        {1,1,1,1,1, 2,1,2,1,0, 0,0,1,2,1, 2,1,1,1,1, 1},
+        {2,2,2,2,2, 2,2,2,1,0, 0,0,1,2,2, 2,2,2,2,2, 2},
+        {1,1,1,1,1, 2,1,2,1,0, 0,0,1,2,1, 2,1,1,1,1, 1},
         {0,0,0,0,1, 2,1,2,1,1, 1,1,1,2,1, 2,1,0,0,0, 0},
         {0,0,0,0,1, 2,1,2,2,2, 2,2,2,2,1, 2,1,0,0,0, 0},
         {1,1,1,1,1, 2,2,2,1,1, 1,1,1,2,2, 2,1,1,1,1, 1},
@@ -49,7 +49,16 @@ MainWindow::MainWindow(QWidget *parent)
     drawFood();
     ui->graphicsView->setScene(scene);
 
-    pacmanInicial = new pacman(zonas);
+    blinky = new fantasmas(0, 0, scene, QPointF(9*oneBloqueSize, 10*oneBloqueSize), zonas);
+    pinky = new fantasmas(0, 20, scene, QPointF(9*oneBloqueSize, 11*oneBloqueSize), zonas);
+    inky = new fantasmas(29, 20, scene, QPointF(11*oneBloqueSize, 10*oneBloqueSize), zonas);
+    clyde = new fantasmas(29, 0, scene, QPointF(11*oneBloqueSize, 11*oneBloqueSize), zonas);
+    scene->addItem(blinky);
+    scene->addItem(pinky);
+    scene->addItem(inky);
+    scene->addItem(clyde);
+
+    pacmanInicial = new pacman(zonas, &score, ui->graphicsView->scene());
     scene->addItem(pacmanInicial);
     pacmanInicial->setPos(10*oneBloqueSize, 13*oneBloqueSize);
 
@@ -60,29 +69,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow(){
     delete ui;
-}
-
-void MainWindow:: eat()
-{
-    for (int i = 0; i < (int)zonas.size(); ++i) {
-        for (int j = 0; j < (int)zonas[0].size(); ++j) {
-            if (zonas[i][j] == 2 && pacmanInicial->getMapX() == j && pacmanInicial->getMapY() == i){
-                QList<QGraphicsItem*> items = scene->items();
-                for (QGraphicsItem* item : items) {
-                    QGraphicsRectItem* rect = dynamic_cast<QGraphicsRectItem*>(item);
-                    if (rect && rect->data(0).toInt() == i) {
-                        // Este es el rectángulo con el identificador buscado
-                        scene->removeItem(rect);
-                        delete rect;
-                        break;
-                    }
-                }
-            }
-        }
-    }
 }
 
 void MainWindow:: drawWalls()
@@ -109,6 +97,7 @@ void MainWindow::drawFood()
             if(zonas[i][j] == 2){ // comida / camino
                 pared = scene-> addRect(j*oneBloqueSize+7, i*oneBloqueSize+7, oneFoodSize, oneFoodSize);
                 pared->setBrush(brush);
+                pared->setData(0,"comida");
             }
         }
     }

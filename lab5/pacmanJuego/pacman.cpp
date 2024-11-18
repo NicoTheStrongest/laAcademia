@@ -5,21 +5,31 @@ pacman::pacman(QObject *parent)
     : QObject{parent}
 {}
 
-pacman::pacman(vector<vector<int>> &zonas): posX(10*oneBloqueSize), posY(13*oneBloqueSize), ancho(20), alto(20), velocidad(2){
+pacman::pacman(vector<vector<int>> &zonas, int *score, QGraphicsScene* escena): posX(10*oneBloqueSize), posY(13*oneBloqueSize), ancho(20), alto(20), velocidad(1){
     this->velocidadX = 0;
     this->velocidadY = 0;
+    this->score = score;
     mapa = zonas;
+    this->escena = escena;
 
     timer = new QTimer();
     connect(timer, SIGNAL(timeout()), this, SLOT(mover()));
     timer->start(16.67);
+
+    sprite = new QTimer();
+    connect(sprite, SIGNAL(timeout()), this, SLOT(cambiarSprite()));
+    sprite->start(16.67);
+    filasSprite = 0;
+    columnasSprite = 0;
+    pixmap = new QPixmap(":/sprites/animations.gif");
+    anchoSprite = 20;
+    altoSprite = 20;
 
     setRect(0,0,ancho,alto);
     // para aplicar los movimientos del pacman
     this->setFlag(QGraphicsItem::ItemIsFocusable);
     this->setFocus();
 }
-
 
 void pacman:: keyPressEvent(QKeyEvent* event) {
     //nextDirection = event->key();
@@ -43,51 +53,28 @@ void pacman:: keyPressEvent(QKeyEvent* event) {
         moverAdelante();
         setPos(x()+velocidadX,y()+velocidadY);
     }
-
-    /*
-    // Verificar si colisiona con algún objeto food
-    QList<QGraphicsItem*> colisiones = collidingItems();
-    bool colisionConPared = false;
-
-    for (QGraphicsItem* item : colisiones) {
-        if (item->data(0).toString() == "pared") {
-            item->setOpacity(1.0); // se hacen visibles las pareced
-            colisionConPared = true;
-            break;
-        }
-    }
-*/
 }
 
 void pacman::moverAtras(){
     switch (direccion) {
     case Qt::Key_Right:{
-        //posX=x()-velocidad;
         velocidadX=-(velocidad);
         velocidadY=0;
         setPos(x()+velocidadX,y());
-        //nextDirection = direccion;
-        //if(choque == true){setPos(x()+velocidadX,y()+velocidadY); choque==false;}
     }
         break;
     case Qt::Key_Up:
     {
-        //posY=y()+velocidad;
         velocidadY=+(velocidad);
         velocidadX=0;
         setPos(x(),y()+velocidadY);
-        //nextDirection = direccion;
-        //if(choque == true){setPos(x()+velocidadX,y()+velocidadY); choque==false;}
     }
         break;
     case Qt::Key_Left:
     {
-        //posX=x()+velocidad;
         velocidadX=+(velocidad);
         velocidadY=0;
         setPos(x()+velocidadX,y());
-        //nextDirection = direccion;
-        //if(choque == true){setPos(x()+velocidadX,y()+velocidadY); choque==false;}
     }
         break;
     case Qt::Key_Down:
@@ -116,32 +103,20 @@ void pacman::moverAdelante()
     switch (direccion) {
     case Qt::Key_Right:
     {
-        //posX=x()+velocidad;
-        //setPos(x()+velocidad,y());
-        //nextDirection = direccion;
         velocidadX=+(velocidad);
         velocidadY=0;
-        //if(choque == true){setPos(x()+velocidadX,y()+velocidadY); choque==false;}
     }
         break;
     case Qt::Key_Up:
     {
-        //posY=y()-velocidad;
-        //setPos(x(),y()-velocidad);
-        //nextDirection = direccion;
         velocidadY=-(velocidad);
         velocidadX=0;
-        //if(choque == true){setPos(x()+velocidadX,y()+velocidadY); choque==false;}
     }
         break;
     case Qt::Key_Left:
     {
-        //posX=x()-velocidad;
-        //setPos(x()-velocidad,y());
-        //nextDirection = direccion;
         velocidadX=-(velocidad);
         velocidadY=0;
-        //if(choque == true){setPos(x()+velocidadX,y()+velocidadY); choque==false;}
     }
         break;
     case Qt::Key_Down:
@@ -212,6 +187,18 @@ bool pacman::colisionParedEnDireccion(int direccion1) {
     return true;
 }
 
+void pacman::colisionFantasma()
+{
+    QList<QGraphicsItem*> colisiones = collidingItems();
+    for (QGraphicsItem* item : colisiones) {
+        if (item->data(0).toString() == "fantasma") {
+            qDebug() << "Se presionó ESC. Cerrando la aplicación...";
+            QApplication::quit();  // Cerrar la aplicación
+            break;
+        }
+    }
+}
+
 void pacman::cambiarDireccion()
 {
     if (direccionDeseada != -1 && !colisionParedEnDireccion(direccionDeseada)) {
@@ -238,16 +225,52 @@ int pacman::getMapXRightSide(){return ((x()+0.9999*ancho)/oneBloqueSize);}
 
 int pacman::getMapYRightSide(){return ((y()+0.9999*ancho)/oneBloqueSize);}
 
-void pacman::mover()
-{
+void pacman::mover(){
     cambiarDireccion();
     if (!colisionPared()) {
         moverAdelante();
         setPos(x() + velocidadX, y() + velocidadY);
     }
+    if(x() == 0 && y() == 10*oneBloqueSize){setPos(20*oneBloqueSize, y());}
+    else if (x() == 20*oneBloqueSize && y() == 10*oneBloqueSize){setPos(1, y());}
+    colisionFantasma();
+    eat();
+    if(*score == 215){
+        qDebug() << "Se presionó ESC. Cerrando la aplicación...";
+        QApplication::quit();  // Cerrar la aplicación
+    }
 }
 
+void pacman::cambiarSprite()
+{
+    columnasSprite += 20;
+    if(columnasSprite>=140){
+        columnasSprite = 0;
+    }
+    this->update(-anchoSprite/2,-altoSprite/2,anchoSprite,altoSprite);
+}
 
+void pacman:: eat(){
+    QList<QGraphicsItem*> colisiones = collidingItems();
+    for (QGraphicsItem* item : colisiones) {
+        if (item->data(0).toString() == "comida") {
+            escena->removeItem(item);
+            (*score)++;
+            qDebug()<<*score;
+            break;
+        }
+    }
+}
+
+QRectF pacman::boundingRect() const
+{
+    return QRectF(-anchoSprite/9999999,-altoSprite/9999999,anchoSprite,altoSprite);
+}
+
+void pacman::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    painter->drawPixmap(-anchoSprite/9999999,-altoSprite/9999999,*pixmap,columnasSprite,0,anchoSprite, altoSprite);
+}
 
 
 

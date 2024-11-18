@@ -3,6 +3,8 @@
 
 
 #include "Pacman.h"
+#include "fantasmas.h"
+
 #include <QMainWindow>
 #include <QGraphicsItem>
 #include <QGraphicsScene> // Paquete para control de scena
@@ -33,13 +35,16 @@ public:
     QTimer timer;
     vector<vector<int>> zonas;
     pacman* pacmanInicial;
+    fantasmas* blinky;
+    fantasmas* pinky;
+    fantasmas* inky;
+    fantasmas* clyde;
     int oneBloqueSize;
     int oneFoodSize;
+    int score;
 
     void drawWalls();
     void drawFood();
-    void eat();
-
 private:
     Ui::MainWindow *ui;
     // QGraphicsView* view;     // Vista para mostrar la escena

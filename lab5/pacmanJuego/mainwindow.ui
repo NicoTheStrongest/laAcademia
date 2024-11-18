@@ -43,9 +43,15 @@
      <x>0</x>
      <y>0</y>
      <width>700</width>
-     <height>21</height>
+     <height>17</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuPacman">
+    <property name="title">
+     <string>Pacman</string>
+    </property>
+   </widget>
+   <addaction name="menuPacman"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="cursor">
